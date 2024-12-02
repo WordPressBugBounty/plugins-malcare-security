@@ -25,7 +25,7 @@ class MCWPAdmin {
 	}
 
 	public function removeAdminNotices() {
-		if (array_key_exists('page', $_REQUEST) && $_REQUEST['page'] == $this->bvinfo->plugname) {
+		if (array_key_exists('page', $_REQUEST) && $_REQUEST['page'] == $this->bvinfo->plugname) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			remove_all_actions('admin_notices');
 			remove_all_actions('all_admin_notices');
 		}
@@ -48,18 +48,19 @@ class MCWPAdmin {
 	public function initHandler() {
 		if (!current_user_can('activate_plugins'))
 			return;
+		$bvnonce = isset($_REQUEST['bvnonce']) ? sanitize_text_field(wp_unslash($_REQUEST['bvnonce'])) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- using custom sanitization
+		$blogvaultkey = isset($_REQUEST['blogvaultkey']) ? MCAccount::sanitizeKey(wp_unslash($_REQUEST['blogvaultkey'])) : '';
+		$page = isset($_REQUEST['page']) ? sanitize_text_field(wp_unslash($_REQUEST['page'])) : '';
 
-		if (array_key_exists('bvnonce', $_REQUEST) &&
-				wp_verify_nonce($_REQUEST['bvnonce'], "bvnonce") &&
-				array_key_exists('blogvaultkey', $_REQUEST) &&
-				(strlen(MCAccount::sanitizeKey($_REQUEST['blogvaultkey'])) == 64) &&
-				(array_key_exists('page', $_REQUEST) &&
-				$_REQUEST['page'] == $this->bvinfo->plugname)) {
-			$keys = str_split($_REQUEST['blogvaultkey'], 32);
-			$pubkey = $keys[0];
+		if ($bvnonce && wp_verify_nonce($bvnonce, "bvnonce") &&
+			$blogvaultkey && strlen($blogvaultkey) == 64 &&
+			($page && $page === $this->bvinfo->plugname)) {
+			$keys = str_split($blogvaultkey, 32);
 			MCAccount::addAccount($this->settings, $keys[0], $keys[1]);
+
 			if (array_key_exists('redirect', $_REQUEST)) {
-				$location = $_REQUEST['redirect'];
+				$location = esc_url_raw(wp_unslash($_REQUEST['redirect']));
 				$this->account = MCAccount::find($this->settings, $pubkey);
 				wp_redirect($this->account->authenticatedUrl('/malcare/access/welcome'));
 				exit();
@@ -76,7 +77,9 @@ class MCWPAdmin {
 
 	public function handleDismissWSKBanner() {
 		$user_id = get_current_user_id();
-		if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['dismiss_wsk_banner']) && wp_verify_nonce($_POST['_wpnonce'], 'dismiss_wsk_banner')) {
+		$bvnonce = isset($_REQUEST['bvnonce']) ? sanitize_text_field(wp_unslash($_REQUEST['bvnonce'])) : '';
+		if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' &&
+				isset($_POST['dismiss_wsk_banner']) && wp_verify_nonce($bvnonce, 'dismiss_wsk_banner')) {
 			update_user_meta($user_id, 'wsk_banner_dismissed', true);
 		}
 	}
@@ -97,6 +100,7 @@ class MCWPAdmin {
 		if ($this->siteinfo->isWSKHosted()) {
 			$this->handleDismissWSKBanner();
 			$bannerDismissed = get_user_meta(get_current_user_id(), 'wsk_banner_dismissed', true);
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if (!$bannerDismissed || (array_key_exists('page', $_REQUEST) && $_REQUEST['page'] == $this->bvinfo->plugname)) {
 				if ( $this->canShowWSKBanner() ){
 					add_action('admin_enqueue_scripts', function () {
@@ -243,6 +247,7 @@ class MCWPAdmin {
 		$bvnonce = wp_create_nonce("bvnonce");
 		$public = MCAccount::getApiPublicKey($this->settings);
 		$secret = MCRecover::defaultSecret($this->settings);
+		$server_ip = isset($_SERVER["SERVER_ADDR"]) ? sanitize_text_field(wp_unslash($_SERVER["SERVER_ADDR"])) : null;
 		$tags = "<input type='hidden' name='url' value='".esc_attr($this->siteinfo->wpurl())."'/>\n".
 				"<input type='hidden' name='homeurl' value='".esc_attr($this->siteinfo->homeurl())."'/>\n".
 				"<input type='hidden' name='siteurl' value='".esc_attr($this->siteinfo->siteurl())."'/>\n".
@@ -250,7 +255,7 @@ class MCWPAdmin {
 				"<input type='hidden' name='plug' value='".esc_attr($this->bvinfo->plugname)."'/>\n".
 				"<input type='hidden' name='adminurl' value='".esc_attr($this->mainUrl())."'/>\n".
 				"<input type='hidden' name='bvversion' value='".esc_attr($this->bvinfo->version)."'/>\n".
-	 			"<input type='hidden' name='serverip' value='".esc_attr($_SERVER["SERVER_ADDR"])."'/>\n".
+				"<input type='hidden' name='serverip' value='".esc_attr($server_ip)."'/>\n".
 				"<input type='hidden' name='abspath' value='".esc_attr(ABSPATH)."'/>\n".
 				"<input type='hidden' name='secret' value='".esc_attr($secret)."'/>\n".
 				"<input type='hidden' name='public' value='".esc_attr($public)."'/>\n".
@@ -283,14 +288,17 @@ class MCWPAdmin {
 	}
 
 	public function adminPage() {
-		if (isset($_REQUEST['bvnonce']) && wp_verify_nonce( $_REQUEST['bvnonce'], 'bvnonce' )) {
+		$bvnonce = isset($_REQUEST['bvnonce']) ? sanitize_text_field(wp_unslash($_REQUEST['bvnonce'])) : '';
+		if ($bvnonce && wp_verify_nonce($bvnonce, 'bvnonce')) {
 			$info = array();
 			$this->siteinfo->basic($info);
-			$this->bvapi->pingbv('/bvapi/disconnect', $info, MCAccount::sanitizeKey($_REQUEST['pubkey']));
-			MCAccount::remove($this->settings, MCAccount::sanitizeKey($_REQUEST['pubkey']));
+			if (!empty($_REQUEST['pubkey'])) {
+				$pubkey = MCAccount::sanitizeKey(wp_unslash($_REQUEST['pubkey'])); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$this->bvapi->pingbv('/bvapi/disconnect', $info, $pubkey);
+				MCAccount::remove($this->settings, $pubkey);
+			}
 		}
-
-		if (isset($_REQUEST['account_details'])) {
+			if (isset($_REQUEST['account_details'])) {
 			$this->showAccountDetailsPage();
 		} else if (isset($_REQUEST['add_account'])) {
 			$this->showAddAccountPage();
