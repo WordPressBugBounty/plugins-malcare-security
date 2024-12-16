@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH') && !defined('MCDATAPATH')) exit;
 
-if (!class_exists('MCProtectUtils_V585')) :
-class MCProtectUtils_V585 {
+if (!class_exists('MCProtectUtils_V588')) :
+class MCProtectUtils_V588 {
 	public static function getIP($ip_header) {
 		$ip = null;
 		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
@@ -134,7 +134,7 @@ class MCProtectUtils_V585 {
 
 		if (is_array($val)) {
 			foreach ($val as $e) {
-				$length += MCProtectUtils_V585::getLength($e);
+				$length += MCProtectUtils_V588::getLength($e);
 			}
 
 			return $length;
