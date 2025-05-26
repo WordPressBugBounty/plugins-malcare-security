@@ -4,9 +4,9 @@ Tags: wordpress security, firewall, malware scanner, malware removal, vulnerabil
 Plugin URI: https://www.malcare.com
 Donate link: https://www.malcare.com
 Requires at least: 4.0
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 5.6.0
-Stable tag: 5.93
+Stable tag: 6.02
 License: GPLv2 or later
 License URI: [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -403,6 +403,9 @@ These are available on our website: [Terms of Service](https://www.malcare.com/t
 8. MalCare’s Uptime Monitoring notifies if a website goes down so that you can handle the situation before starting to lose visitors.
 
 == CHANGELOG ==
+= 6.02 =
+* Tweak: Improved Authentication
+
 = 5.93 =
 * Tweak: Improvements in bulk upgrade
 
