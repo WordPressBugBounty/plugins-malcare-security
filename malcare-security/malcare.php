@@ -5,7 +5,7 @@ Plugin URI: https://www.malcare.com
 Description: MalCare WordPress Security Plugin - Malware Scanner, Cleaner, Security Firewall
 Author: MalCare Security
 Author URI: https://www.malcare.com
-Version: 6.62
+Version: 6.65
 Network: True
 License: GPLv2 or later
 License URI: [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
@@ -133,7 +133,9 @@ if (MCHelper::getRawParam('REQUEST', 'bvplugname') == "malcare") {
 	$rcvracc = MCHelper::getRawParam('REQUEST', 'rcvracc');
 
 	if (isset($rcvracc)) {
-		$account = MCRecover::find($bvsettings, $pubkey);
+		$bvctag = MCHelper::getRawParam('REQUEST', 'bvctag');
+		$bvctag = isset($bvctag) ? MCAccount::sanitizeKey($bvctag) : null;
+		$account = MCRecover::find($bvsettings, $pubkey, $bvctag);
 	} else {
 		$account = MCAccount::find($bvsettings, $pubkey);
 	}
@@ -160,7 +162,9 @@ if (MCHelper::getRawParam('REQUEST', 'bvplugname') == "malcare") {
 			}
 			$request->params = $params;
 			$callback_handler = new MCCallbackHandler($bvdb, $bvsettings, $bvsiteinfo, $request, $account, $response);
-			if ($request->is_afterload) {
+			if ($request->is_aftershutdown) {
+				$callback_handler->deferExecutionUntilShutdown();
+			} else if ($request->is_afterload) {
 				add_action('wp_loaded', array($callback_handler, 'execute'));
 			} else if ($request->is_admin_ajax) {
 				add_action('wp_ajax_bvadm', array($callback_handler, 'bvAdmExecuteWithUser'));
@@ -177,14 +181,14 @@ if (MCHelper::getRawParam('REQUEST', 'bvplugname') == "malcare") {
 		if ($bvinfo->isProtectModuleEnabled()) {
 			require_once dirname( __FILE__ ) . '/protect/protect.php';
 			//For backward compatibility.
-			MCProtect_V662::$settings = new MCWPSettings();
-			MCProtect_V662::$db = new MCWPDb();
-			MCProtect_V662::$info = new MCInfo(MCProtect_V662::$settings);
+			MCProtect_V665::$settings = new MCWPSettings();
+			MCProtect_V665::$db = new MCWPDb();
+			MCProtect_V665::$info = new MCInfo(MCProtect_V665::$settings);
 
-			add_action('mc_clear_pt_config', array('MCProtect_V662', 'uninstall'));
+			add_action('mc_clear_pt_config', array('MCProtect_V665', 'uninstall'));
 
 			if ($bvinfo->isActivePlugin()) {
-				MCProtect_V662::init(MCProtect_V662::MODE_WP);
+				MCProtect_V665::init(MCProtect_V665::MODE_WP);
 			}
 		}
 
@@ -197,7 +201,7 @@ if (MCHelper::getRawParam('REQUEST', 'bvplugname') == "malcare") {
 
 	}
 	$bv_site_settings = $bvsettings->getOption('bv_site_settings');
-	if (isset($bv_site_settings)) {
+	if (is_array($bv_site_settings)) {
 		if (isset($bv_site_settings['wp_auto_updates'])) {
 			$wp_auto_updates = $bv_site_settings['wp_auto_updates'];
 			if (array_key_exists('block_auto_update_core', $wp_auto_updates)) {
@@ -215,6 +219,26 @@ if (MCHelper::getRawParam('REQUEST', 'bvplugname') == "malcare") {
 				add_filter('auto_update_translation', '__return_false' );
 			}
 		}
+	
+		if (isset($bv_site_settings['security_hardening'])) {
+			$bv_security_hardening = $bv_site_settings['security_hardening'];
+			if (is_array($bv_security_hardening) &&
+					isset($bv_security_hardening['version']) &&
+					$bv_security_hardening['version'] === 1) {
+				if (isset($bv_security_hardening['disable_file_editor']) &&
+						$bv_security_hardening['disable_file_editor'] === true &&
+						!defined('DISALLOW_FILE_EDIT')) {
+					define('DISALLOW_FILE_EDIT', true);
+				}
+	
+				if (isset($bv_security_hardening['block_file_modifications']) &&
+						$bv_security_hardening['block_file_modifications'] === true &&
+						!defined('DISALLOW_FILE_MODS')) {
+					define('DISALLOW_FILE_MODS', true);
+				}
+			}
+		}
+
 	}
 
 	if (is_admin()) {
