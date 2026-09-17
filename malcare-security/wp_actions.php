@@ -43,6 +43,7 @@ if (!class_exists('MCWPAction')) :
 			do_action('mc_clear_dynsync_config');
 			##CLEARCACHECONFIG##
 			do_action('mc_clear_bv_services_config');
+			do_action('mc_clear_actlog_config');
 			do_action('mc_clear_wp_2fa_config');
 			do_action('mc_remove_bv_preload_include');
 			do_action('mc_clear_php_error_config');

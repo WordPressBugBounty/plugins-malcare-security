@@ -2,8 +2,8 @@
 // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 if (!defined('ABSPATH') && !defined('MCDATAPATH')) exit;
 
-if (!trait_exists('MCProtectFWRuleRequestFunc_V672')) :
-trait MCProtectFWRuleRequestFunc_V672 {
+if (!trait_exists('MCProtectFWRuleRequestFunc_V676')) :
+trait MCProtectFWRuleRequestFunc_V676 {
 	private function _rf_getAction() {
 		$args = $this->processRuleFunctionParams(
 			'getAction',
@@ -495,7 +495,7 @@ trait MCProtectFWRuleRequestFunc_V672 {
 		$user = $this->_rf_getCurrentWPUser();
 
 		if (!array_key_exists('ID', $user)) {
-			throw new MCProtectRuleError_V672(
+			throw new MCProtectRuleError_V676(
 				$this->addExState("wpUserId: user's id doesn't exist")
 			);
 		}
