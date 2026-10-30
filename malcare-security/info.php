@@ -11,7 +11,7 @@ if (!class_exists('MCInfo')) :
 		public $ip_header_option = 'mcipheader';
 		public $brand_option = 'bv_whitelabel_infos';
 		public $wp_lp_whitelabel_option = 'mcLpWhitelabelConf';
-		public $version = '6.76';
+		public $version = '6.81';
 		public $webpage = 'https://www.malcare.com';
 		public $appurl = 'https://app.malcare.com';
 		public $slug = 'malcare-security/malcare.php';
@@ -240,11 +240,15 @@ if (!class_exists('MCInfo')) :
 		}
 
 		public function info() {
-			return array(
+			$info = array(
 				"bvversion" => $this->version,
 				"sha1" => "true",
 				"plugname" => $this->plugname
 			);
+			if (isset($GLOBALS['bv_mu_versions'][$this->plugname])) {
+				$info['mu_version'] = $GLOBALS['bv_mu_versions'][$this->plugname];
+			}
+			return $info;
 		}
 	}
 endif;

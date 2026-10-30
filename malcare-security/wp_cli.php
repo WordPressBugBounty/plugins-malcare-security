@@ -161,6 +161,10 @@ class MCWPCli {
 			}
 		}
 	}
+	public function get_connection_key() {
+		WP_CLI::line($this->bvinfo->getConnectionKey());
+	}
+
 	public function setkey($args, $params) {
 		// Support for encoded key
 		if (isset($params['key'])) {

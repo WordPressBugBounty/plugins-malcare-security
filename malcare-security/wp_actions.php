@@ -43,6 +43,7 @@ if (!class_exists('MCWPAction')) :
 			do_action('mc_clear_dynsync_config');
 			##CLEARCACHECONFIG##
 			do_action('mc_clear_bv_services_config');
+			do_action('mc_clear_mu_plugin');
 			do_action('mc_clear_actlog_config');
 			do_action('mc_clear_wp_2fa_config');
 			do_action('mc_remove_bv_preload_include');
@@ -52,6 +53,16 @@ if (!class_exists('MCWPAction')) :
 		public function clear_bv_services_config() {
 			$this->settings->deleteOption($this->bvinfo->services_option_name);
 		}
+
+		public function clear_mu_plugin() {
+			if (defined('WPMU_PLUGIN_DIR')) {
+				$mu_plugin_file = WPMU_PLUGIN_DIR . '/0-malcare-mu-plugin.php';
+				if (file_exists($mu_plugin_file)) {
+					@unlink($mu_plugin_file);
+				}
+			}
+		}
+
 
 		public function clear_wp_2fa_config() {
 			$meta_keys = array('mc_2fa_enabled', 'mc_2fa_secret', 'mc_2fa_method', 'mc_2fa_email_challenge', 'mc_2fa_email_rate', 'mc_2fa_attempts');

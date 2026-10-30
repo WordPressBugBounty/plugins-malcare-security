@@ -6,7 +6,7 @@ Donate link: https://www.malcare.com
 Requires at least: 4.0
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 6.76
+Stable tag: 6.81
 License: GPLv2 or later
 License URI: [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -402,6 +402,12 @@ FTP details input into MalCare is processed on our servers. We need your FTP cre
 These are available on our website: [Terms of Service](https://www.malcare.com/tos/) and [Privacy Policy](https://www.malcare.com/privacy/)
 
 == CHANGELOG ==
+= 6.81 =
+* New: Added a must-use plugin loader.
+* New: Added WP-CLI commands to set, get, and remove plugin connection keys.
+* Fix: Activity logging now records updates performed through WordPress AJAX.
+* Improvement: Streamlined two-factor authentication login encoding.
+
 = 6.76 =
 * New: Added customizable plain-text email templates for WordPress email two-factor authentication sign-in codes.
 * Improvement: Enhanced activity logging with broader event coverage, configurable collection, and improved reliability.
