@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH') && !defined('MCDATAPATH')) exit;
 
-if (!class_exists('MCProtectLoggerDB_V681')) :
-class MCProtectLoggerDB_V681 {
+if (!class_exists('MCProtectLoggerDB_V683')) :
+class MCProtectLoggerDB_V683 {
 	private $tablename;
 	private $bv_tablename;
 
@@ -10,16 +10,16 @@ class MCProtectLoggerDB_V681 {
 
 	function __construct($tablename) {
 		$this->tablename = $tablename;
-		$this->bv_tablename = MCProtect_V681::$db->getBVTable($tablename);
+		$this->bv_tablename = MCProtect_V683::$db->getBVTable($tablename);
 	}
 
 	public function log($data) {
 		if (is_array($data)) {
-			if (MCProtect_V681::$db->rowsCount($this->bv_tablename) > MCProtectLoggerDB_V681::MAXROWCOUNT) {
-				MCProtect_V681::$db->deleteRowsFromtable($this->tablename, 1);
+			if (MCProtect_V683::$db->rowsCount($this->bv_tablename) > MCProtectLoggerDB_V683::MAXROWCOUNT) {
+				MCProtect_V683::$db->deleteRowsFromtable($this->tablename, 1);
 			}
 
-			MCProtect_V681::$db->replaceIntoBVTable($this->tablename, $data);
+			MCProtect_V683::$db->replaceIntoBVTable($this->tablename, $data);
 		}
 	}
 }

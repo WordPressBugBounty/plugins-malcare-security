@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH') && !defined('MCDATAPATH')) exit;
 
-if (!class_exists('MCProtectUtils_V681')) :
-class MCProtectUtils_V681 {
+if (!class_exists('MCProtectUtils_V683')) :
+class MCProtectUtils_V683 {
 	public static function getIP($ip_header) {
 		$ip = null;
 		if (is_array($ip_header)) {
@@ -130,7 +130,7 @@ class MCProtectUtils_V681 {
 
 		if (is_array($val)) {
 			foreach ($val as $e) {
-				$length += MCProtectUtils_V681::getLength($e);
+				$length += MCProtectUtils_V683::getLength($e);
 			}
 
 			return $length;

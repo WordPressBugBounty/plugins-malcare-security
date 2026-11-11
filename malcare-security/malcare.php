@@ -5,7 +5,7 @@ Plugin URI: https://www.malcare.com
 Description: MalCare WordPress Security Plugin - Malware Scanner, Cleaner, Security Firewall
 Author: MalCare Security
 Author URI: https://www.malcare.com
-Version: 6.81
+Version: 6.83
 Network: True
 License: GPLv2 or later
 License URI: [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
@@ -63,6 +63,7 @@ register_deactivation_hook(__FILE__, array($wp_action, 'deactivate'));
 
 
 add_action('wp_footer', array($wp_action, 'footerHandler'), 100);
+add_action('wp_enqueue_scripts', array($wp_action, 'enqueueBrokenLinkHighlight'));
 add_action('mc_clear_bv_services_config', array($wp_action, 'clear_bv_services_config'));
 add_action('mc_clear_mu_plugin', array($wp_action, 'clear_mu_plugin'));
 
@@ -187,14 +188,14 @@ if (MCHelper::getRawParam('REQUEST', 'bvplugname') == "malcare") {
 		if ($bvinfo->isProtectModuleEnabled()) {
 			require_once dirname( __FILE__ ) . '/protect/protect.php';
 			//For backward compatibility.
-			MCProtect_V681::$settings = new MCWPSettings();
-			MCProtect_V681::$db = new MCWPDb();
-			MCProtect_V681::$info = new MCInfo(MCProtect_V681::$settings);
+			MCProtect_V683::$settings = new MCWPSettings();
+			MCProtect_V683::$db = new MCWPDb();
+			MCProtect_V683::$info = new MCInfo(MCProtect_V683::$settings);
 
-			add_action('mc_clear_pt_config', array('MCProtect_V681', 'uninstall'));
+			add_action('mc_clear_pt_config', array('MCProtect_V683', 'uninstall'));
 
 			if ($bvinfo->isActivePlugin()) {
-				MCProtect_V681::init(MCProtect_V681::MODE_WP);
+				MCProtect_V683::init(MCProtect_V683::MODE_WP);
 			}
 		}
 
